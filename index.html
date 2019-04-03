@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Template • TodoMVC</title>
+	<link rel="stylesheet" href="node_modules/todomvc-common/base.css">
+	<link rel="stylesheet" href="node_modules/todomvc-app-css/index.css">
+	<!-- CSS overrides - remove if you don't need it -->
+	<link rel="stylesheet" href="css/app.css">
+</head>
+
+<body>
+	<section class="todoapp" id="app">
+		<header class="header">
+			<h1>todos</h1>
+      <input
+      class="new-todo"
+      placeholder="What needs to be done?"
+      autofocus
+      @keyup.enter="handleAdd">
+		</header>
+		<template v-if="todos.length > 0 ">
+			<!-- This section should be hidden by default and shown when there are todos -->
+			<section class="main">
+				<input id="toggle-all" class="toggle-all" type="checkbox" @change="handleToggleAll"
+					:checked="everyCompleted()">
+				<label for="toggle-all">Mark all as complete</label>
+				<ul class="todo-list">
+					<!-- These are here just to show the structure of the list items -->
+					<!-- List items should get the class `editing` when editing and `completed` when marked as completed -->
+					<!-- 
+							li 只要拥有 editing 类名，那么就会进入编辑状态
+
+							editing 后面的值如果是 true ，那么该标签有这个类名，如果是 false，那么改标签没有这个类名
+							v-bind:class="{completed:item.completed, editing: true}"
+
+							只要我来决定由没有这个类名就行了
+							item 是当前这一条数据
+							currentEdit 是我自己定义的变量
+							只要他们两个相等就有类名，只要不相等就没有类名
+
+							第一个 li 的 item 是一个 { id: 1, ... }
+							第二个 li 的 item 是一个 { id: 2, ... }
+							第三个 li 的 item 是一个 { id: 3, ... }
+							currentEdit 是一个 null
+
+							首次渲染
+							第一个 li 里面， editing: num === { id: 1, ... } 没有类名
+							第二个 li 里面， editing: num === { id: 2, ... } 没有类名
+							第三个 li 里面， editing: num === { id: 3, ... } 没有类名
+
+							当我双击第一个 label 的时候
+							  - 把当前这个 item 传递到函数里面，并且给 currentEdit 赋值为这个 item
+							  - 此时 currentEdit 就是 { id: 1, ... }
+							  - 第一个 li 里面， editing: { id: 1, ... } === { id: 1, ... } 有类名
+							  - 第二个 li 里面， editing: { id: 1, ... } === { id: 2, ... } 没有类名
+							  - 第三个 li 里面， editing: { id: 1, ... } === { id: 3, ... } 没有类名
+
+							当我双击第一个 label 的时候
+							  - 把当前这个 item 传递到函数里面，并且给 currentEdit 赋值为这个 item
+							  - 此时 currentEdit 就是 { id: 2, ... }
+							  - 第一个 li 里面， editing: { id: 2, ... } === { id: 1, ... } 没有类名
+							  - 第二个 li 里面， editing: { id: 2, ... } === { id: 2, ... } 有类名
+							  - 第三个 li 里面， editing: { id: 2, ... } === { id: 3, ... } 没有类名
+
+							esc 取消的时候，currentEdit = null
+							  - 第一个 li 里面， editing: num === { id: 1, ... } 没有类名
+							  - 第二个 li 里面， editing: num === { id: 2, ... } 没有类名
+							  - 第三个 li 里面， editing: num === { id: 3, ... } 没有类名
+						-->
+          <li
+            v-bind:class="{completed:item.completed, editing: currentEdit === item}"
+						v-for="(item,index) in filterTodos()">
+						<div class="view">
+							<input class="toggle" type="checkbox" v-model="item.completed">
+							<label @dblclick="showEdit(item)">{{ item.title }}</label>
+							<button class="destroy" @click="handleDelete(index)"></button>
+						</div>
+						<input
+						class="edit"
+						:value="item.title"
+						@keyup.esc="handleCancelEdit"
+						@keyup.enter="SaveEditor(item,index,$event)"
+						>
+					</li>
+				</ul>
+			</section>
+			<!-- This footer should hidden by default and shown when there are todos -->
+			<footer class="footer">
+				<!-- This should be `0 items left` by default -->
+				<span class="todo-count"><strong>{{ getRemaining() }}</strong> 未完成</span>
+				<!-- Remove this if you don't implement routing -->
+				<ul class="filters">
+					<li>
+						<a :class="{selected:filterText === 'all'}" href="#/" >所有</a>
+					</li>
+					<li>
+						<a href="#/active" :class="{selected:filterText === 'active'}">未完成</a>
+					</li>
+					<li>
+						<a href="#/completed" :class="{selected:filterText === 'completed'}" >已完成</a>
+					</li>
+				</ul>
+				<!-- 这个按钮如果没有已完成的项，需要删除 -->
+				<button class="clear-completed" v-if="hasCompleted()" @click="handleDeleteAllCompleted">清除完成</button>
+			</footer>
+		</template>
+
+	</section>
+	<footer class="info">
+		<p>Double-click to edit a todo</p>
+		<!-- Remove the below line ↓ -->
+		<p>Template by <a href="http://sindresorhus.com">Sindre Sorhus</a></p>
+		<!-- Change this out with your name and url ↓ -->
+		<p>Created by <a href="http://todomvc.com">you</a></p>
+		<p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
+	</footer>
+	<!-- Scripts here. Don't remove ↓ -->
+	<script src="node_modules/todomvc-common/base.js"></script>
+	<script src="./node_modules/vue/dist/vue.js"></script>
+	<script src="js/app.js"></script>
+</body>
+
+</html>
